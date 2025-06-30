@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Book Maker</title>
+  <style>
+    body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 0; }
+    #toolbar { margin: 10px; }
+    #canvas-container { border: 1px solid #ccc; position: relative; }
+    canvas { background: white; }
+    #gallery { display: flex; flex-wrap: wrap; margin: 10px; }
+    .thumb { border: 1px solid #ccc; margin: 5px; width: 100px; height: 100px; object-fit: cover; cursor: pointer; }
+    #story-tracker { display: flex; justify-content: space-between; width: 300px; margin: 10px; }
+    .circle { width: 40px; height: 40px; border-radius: 20px; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    #story-line { height: 2px; background: #aaa; position: absolute; top: 19px; left: 20px; right: 20px; z-index: -1; }
+  </style>
+</head>
+<body>
+
+<h1>Simple Book Maker</h1>
+<div id="toolbar">
+  <button onclick="addPage()">Add Page</button>
+  <button onclick="showGallery()">Show Gallery</button>
+</div>
+
+<div id="canvas-container">
+  <canvas id="drawCanvas" width="400" height="400"></canvas>
+</div>
+
+<div id="story-tracker" style="position: relative;">
+  <div id="story-line"></div>
+  <div class="circle">Intro</div>
+  <div class="circle">Conflict</div>
+  <div class="circle">End</div>
+</div>
+
+<div id="gallery"></div>
+
+<script>
+let pages = [];
+let currentPageIndex = -1;
+const canvas = document.getElementById('drawCanvas');
+const ctx = canvas.getContext('2d');
+let drawing = false;
+
+canvas.addEventListener('mousedown', e => {
+  drawing = true;
+  ctx.beginPath();
+  ctx.moveTo(e.offsetX, e.offsetY);
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (drawing) {
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+  }
+});
+
+canvas.addEventListener('mouseup', e => {
+  drawing = false;
+});
+
+function addPage() {
+  if (currentPageIndex >= 0) {
+    pages[currentPageIndex] = canvas.toDataURL();
+  }
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  currentPageIndex = pages.length;
+  pages.push(null);
+}
+
+function showGallery() {
+  if (currentPageIndex >= 0) {
+    pages[currentPageIndex] = canvas.toDataURL();
+  }
+  const gallery = document.getElementById('gallery');
+  gallery.innerHTML = '';
+  pages.forEach((img, i) => {
+    if (img) {
+      const thumb = document.createElement('img');
+      thumb.src = img;
+      thumb.className = 'thumb';
+      thumb.onclick = () => loadPage(i);
+      gallery.appendChild(thumb);
+    }
+  });
+}
+
+function loadPage(index) {
+  const img = new Image();
+  img.onload = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+    currentPageIndex = index;
+  };
+  img.src = pages[index];
+}
+</script>
+
+</body>
+</html>
